@@ -39,6 +39,12 @@ function App() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const handleOptionSelect = (index) => {
+    setSelectedOption(index);
+    setShowFeedback(true);
+  };
 
   const handleNext = () => {
     if (selectedOption === questions[currentQuestion].correctAnswer) {
@@ -46,6 +52,7 @@ function App() {
     }
 
     setSelectedOption(null);
+    setShowFeedback(false);
 
     if (currentQuestion + 1 < questions.length) {
       setCurrentQuestion(currentQuestion + 1);
@@ -59,39 +66,81 @@ function App() {
     setSelectedOption(null);
     setScore(0);
     setShowResult(false);
+    setShowFeedback(false);
   };
+
+  const progress =
+    ((currentQuestion + 1) / questions.length) * 100;
 
   return (
     <div className="container">
-      <h2>Quiz Application</h2>
+      <h2>🧠 QuizNova 💭</h2>
+      <div className="progress-bar">
+        <div
+          className="progress"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
 
       {showResult ? (
         <div className="result">
-          <h3>Quiz Completed 🎉</h3>
+          <h3> Quiz Completed 🎉</h3>
           <p>
-            Your Score: <strong>{score}</strong> / {questions.length}
+            Your Score: <strong>{score}</strong> /{" "}
+            {questions.length}
           </p>
-          <button onClick={handleRestart}>Restart Quiz</button>
+          <button onClick={handleRestart}>
+            Restart Quiz
+          </button>
         </div>
       ) : (
         <div className="quiz">
           <h4>
-            Question {currentQuestion + 1} / {questions.length}
+            Question {currentQuestion + 1} /{" "}
+            {questions.length}
           </h4>
-          <p>{questions[currentQuestion].question}</p>
+          <p className="question">
+            {questions[currentQuestion].question}
+          </p>
 
-          {questions[currentQuestion].options.map((option, index) => (
-            <label key={index} className="option">
-              <input
-                type="radio"
-                name="option"
-                value={index}
-                checked={selectedOption === index}
-                onChange={() => setSelectedOption(index)}
-              />
-              {option}
-            </label>
-          ))}
+          {questions[currentQuestion].options.map(
+            (option, index) => {
+              const isCorrect =
+                index ===
+                questions[currentQuestion].correctAnswer;
+              const isSelected = index === selectedOption;
+
+              let className = "option";
+
+              if (showFeedback) {
+                if (isCorrect) className += " correct";
+                else if (isSelected)
+                  className += " incorrect";
+              }
+
+              return (
+                <label key={index} className={className}>
+                  <input
+                    type="radio"
+                    disabled={selectedOption !== null}
+                    checked={isSelected}
+                    onChange={() =>
+                      handleOptionSelect(index)
+                    }
+                  />
+                  {option}
+                </label>
+              );
+            }
+          )}
+          {showFeedback && (
+            <p className="feedback">
+              {selectedOption ===
+              questions[currentQuestion].correctAnswer
+                ? "✅ Correct Answer!"
+                : "❌ Wrong Answer"}
+            </p>
+          )}
 
           <button
             onClick={handleNext}
@@ -104,5 +153,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
